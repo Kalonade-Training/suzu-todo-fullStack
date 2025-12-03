@@ -2,6 +2,7 @@ package todo
 
 import (
 	"fmt"
+	"time"
 	"todo-app-go/domain/entity"
 	"todo-app-go/domain/repository"
 	value_object "todo-app-go/domain/value-object"
@@ -21,16 +22,23 @@ func (u *DuplicateTodoUsecase) Duplicate(originalTodoID value_object.TodoID) err
 	if err != nil {
 		return fmt.Errorf("failed to find original todo: %w", err)
 	}
+	// 修正：DueDate VO のポインタを準備
+	var dueDateVO *value_object.DueDate = nil
+	if originalTodo.DueDate() != nil {
+		tmp := *originalTodo.DueDate() // 一旦値にする
+		dueDateVO = &tmp
+	}
+
 	// 複製するTODOエンティティを作成
 	duplicatedTodo := entity.NewTodo(
 		value_object.NewTodoID(),
 		originalTodo.UserID(),
 		originalTodo.Title(),
 		originalTodo.Body(),
-		originalTodo.DueDate(),
-		originalTodo.IsCompleted(),
-		originalTodo.CreatedAt(),
-		originalTodo.UpdatedAt(),
+		dueDateVO,
+		value_object.NewIsCompleted(false), // 複製時は未完了に設定
+		time.Now(),
+		time.Now(),
 	)
 	// 複製したTODOを保存
 	return u.repo.Create(&duplicatedTodo)

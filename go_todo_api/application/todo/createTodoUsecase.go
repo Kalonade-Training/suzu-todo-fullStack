@@ -22,53 +22,66 @@ func (u *CreateTodoUsecase) Execute(
 	userIDStr string,
 	titleStr string,
 	bodyStr string,
-	dueDateTime time.Time,
-) error {
-	// Value Object生成
+	dueDateValue *time.Time,
+) (*entity.Todos, error) {
+
 	userID, err := vo.FromStringUserID(userIDStr)
 	if err != nil {
-		return fmt.Errorf("invalid user ID: %w", err)
+		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
 
 	title, err := vo.FromStringTitle(titleStr)
 	if err != nil {
-		return fmt.Errorf("invalid title: %w", err)
+		return nil, fmt.Errorf("invalid title: %w", err)
 	}
 
 	body, err := vo.FromStringBody(bodyStr)
 	if err != nil {
-		return fmt.Errorf("invalid body: %w", err)
+		return nil, fmt.Errorf("invalid body: %w", err)
 	}
 
-	dueDate, err := vo.FromTimeDueDate(dueDateTime)
-	if err != nil {
-		return fmt.Errorf("invalid due date: %w", err)
+	// DueDate VO のポインタ
+	var dueDatePtr *vo.DueDate
+
+	// 修正: dueDateValue が nil でない（つまり日付が指定されている）場合のみ VO を生成
+	if dueDateValue != nil {
+		// *time.Time をデリファレンスして time.Time 値を取り出し、VOを生成
+		dueDateVO, err := vo.FromTimeDueDate(*dueDateValue)
+		if err != nil {
+			return nil, fmt.Errorf("invalid due date: %w", err)
+		}
+		// 生成したVOのポインタをセット
+		dueDatePtr = &dueDateVO
 	}
 
-	// 既存タイトルチェック
+	// 重複タイトルチェック
 	filters := repository.TodoFilters{
 		Title: title.Value(),
 	}
-	existingTodos, err := u.TodoRepo.FindAll(userID, filters)
+
+	existing, err := u.TodoRepo.FindAll(userID, filters)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if len(existingTodos) > 0 {
-		return fmt.Errorf("todo with this title already exists")
+	if len(existing) > 0 {
+		return nil, fmt.Errorf("todo with this title already exists")
 	}
 
-	// エンティティ生成
 	newTodo := entity.NewTodo(
 		vo.NewTodoID(),
 		userID,
 		title,
 		body,
-		dueDate,
+		dueDatePtr, // pointer
 		vo.NewIsCompleted(false),
 		time.Now(),
 		time.Now(),
 	)
+	// TodoRepo.Create がポインタを期待しているため、&newTodo を渡す
+	err = u.TodoRepo.Create(&newTodo)
+	if err != nil {
+		return nil, err
+	}
 
-	// DBに保存
-	return u.TodoRepo.Create(&newTodo)
+	return &newTodo, nil
 }

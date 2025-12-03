@@ -18,22 +18,22 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{DB: db}
 }
 
-func (repo *UserRepository) Save(user *entity.Users) error {
+func (repo *UserRepository) Save(user *entity.Users) (string, error) {
 	modelUser := entityToModel(*user)
-	err := repo.DB.Create(modelUser)
+	err := repo.DB.Create(modelUser).Error
 	if err != nil {
-		return fmt.Errorf("failed to save user: %w", err)
+		return "", fmt.Errorf("failed to save user: %w", err)
 	}
-	return nil
+	return modelUser.ID, nil
 }
 
 func (repo *UserRepository) FindByEmail(email value_object.Email) (*entity.Users, error) {
-	var users []model.Users
+	var users model.Users
 	err := repo.DB.Where("email = ?", email.Value()).First(&users).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to find user: %w", err)
 	}
-	userEntity := modelToEntity(users[0])
+	userEntity := modelToEntity(users)
 	return &userEntity, nil
 }
 

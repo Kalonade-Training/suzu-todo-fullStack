@@ -1,6 +1,7 @@
 package todo
 
 import (
+	"fmt"
 	"time"
 	"todo-app-go/domain/entity"
 	"todo-app-go/domain/repository"
@@ -19,9 +20,14 @@ func (uc *UpdateTodoUsecase) Update(
 	todoID value_object.TodoID,
 	title string,
 	body string,
-	dueDate time.Time,
+	dueDate *time.Time,
 	completed bool,
 ) error {
+	// 修正：まず既存のTodoを取得
+	existingTodo, err := uc.repo.FindById(todoID)
+	if err != nil {
+		return fmt.Errorf("failed to find todo: %w", err)
+	}
 	// value_object を作る
 	titleVO, err := value_object.FromStringTitle(title)
 	if err != nil {
@@ -31,22 +37,30 @@ func (uc *UpdateTodoUsecase) Update(
 	if err != nil {
 		return err
 	}
-	dueDateVO, err := value_object.FromTimeDueDate(dueDate)
-	if err != nil {
-		return err
+	// DueDate VO のポインタ
+	var dueDatePtr *value_object.DueDate
+
+	// dueDate が nil でない場合のみ VO を生成
+	if dueDate != nil {
+		dueDateVO, err := value_object.FromTimeDueDate(*dueDate)
+		if err != nil {
+			return err
+		}
+		dueDatePtr = &dueDateVO
 	}
+
 	isCompletedVO := value_object.NewIsCompleted(completed)
 
 	// entity のコンストラクタで Todo を作る
 	todo := entity.NewTodo(
 		todoID,
-		value_object.UserID{}, // UserID は更新しないので空で良い
+		existingTodo.UserID(), // UserID は更新しないので既存の値を使用
 		titleVO,
 		bodyVO,
-		dueDateVO, // DueDate があれば設定
+		dueDatePtr, // DueDate があれば設定
 		isCompletedVO,
-		time.Now(), // CreatedAt
-		time.Now(), // UpdatedAt
+		existingTodo.CreatedAt(), // CreatedAtも既存の値を利用
+		time.Now(),               // UpdatedAt
 	)
 
 	// リポジトリの メソッドを呼び出す

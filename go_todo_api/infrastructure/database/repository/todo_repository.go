@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"time"
 	"todo-app-go/domain/entity"
 	"todo-app-go/domain/repository"
 	value_object "todo-app-go/domain/value-object"
@@ -114,12 +115,18 @@ func (repo *TodoRepository) FindById(todoID value_object.TodoID) (*entity.Todos,
 
 // entityToModelTodo は entity.Todos を model.Todos に変換するヘルパー関数
 func entityToModelTodo(todo entity.Todos) *model.Todos {
+	var dueDatePtr *time.Time
+	if todo.DueDate() != nil {
+		dueDate := todo.DueDate().Value()
+		dueDatePtr = &dueDate
+	}
+
 	return &model.Todos{
 		ID:          todo.ID().Value(),
 		UserID:      todo.UserID().Value(),
 		Title:       todo.Title().Value(),
 		Body:        todo.Body().Value(),
-		DueDate:     todo.DueDate().Value(),
+		DueDate:     dueDatePtr,
 		IsCompleted: todo.IsCompleted().Value(),
 		CreatedAt:   todo.CreatedAt(),
 		UpdatedAt:   todo.UpdatedAt(),
@@ -131,15 +138,23 @@ func modelToEntityTodo(todo model.Todos) entity.Todos {
 	userID, _ := value_object.FromStringUserID(todo.UserID)
 	title, _ := value_object.FromStringTitle(todo.Title)
 	body, _ := value_object.FromStringBody(todo.Body)
-	dueDate, _ := value_object.FromTimeDueDate(todo.DueDate)
 	isCompleted, _ := value_object.FromBoolIsCompleted(todo.IsCompleted)
 	id, _ := value_object.FromStringTodoID(todo.ID)
+
+	var dueDateVO *value_object.DueDate = nil
+	if todo.DueDate != nil && !todo.DueDate.IsZero() {
+		tmp, _ := value_object.FromTimeDueDate(*todo.DueDate)
+		dueDateVO = &tmp
+	} else {
+		dueDateVO = nil
+	}
+
 	return entity.NewTodo(
 		id,
 		userID,
 		title,
 		body,
-		dueDate,
+		dueDateVO,
 		isCompleted,
 		todo.CreatedAt,
 		todo.UpdatedAt,

@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"todo-app-go/domain/auth"
@@ -21,20 +22,20 @@ func NewRegisterUsecase(userRepo repository.IUserRepository, authClient auth.IAu
 		authClient: authClient}
 }
 
-func (u *RegisterUsecase) Register(email value_object.Email, rawPassword value_object.RawPassword) (string, error) {
+func (u *RegisterUsecase) Register(email value_object.Email, rawPassword value_object.RawPassword) (int, string, error) {
 	// 既に登録されているメールアドレスかチェック
 	existingUser, _ := u.UserRepo.FindByEmail(email)
 	if existingUser != nil {
-		return "", fmt.Errorf("email already registered")
+		return 0, "", fmt.Errorf("email already registered")
 	}
 
 	// パスワードをハッシュ化
 	hashedPassword, err := rawPassword.Hash()
 	if err != nil {
-		return "", err
+		return 0, "", err
 	}
 
-	// entity生成
+	// 新しいentity生成
 	newUsers := entity.NewUser(
 		value_object.NewUserID(),
 		email,
@@ -42,7 +43,22 @@ func (u *RegisterUsecase) Register(email value_object.Email, rawPassword value_o
 		time.Now(),
 		time.Now(),
 	)
+	// DB保存して userID を取得
+	userIDStr, err := u.UserRepo.Save(&newUsers)
+	if err != nil {
+		return 0, "", err
+	}
 
-	// DB保存
-	return "", u.UserRepo.Save(&newUsers)
+	// token生成
+	token, err := u.authClient.GenerateToken(userIDStr)
+	if err != nil {
+		return 0, "", err
+	}
+
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		return 0, "", err
+	}
+
+	return userID, token, nil
 }

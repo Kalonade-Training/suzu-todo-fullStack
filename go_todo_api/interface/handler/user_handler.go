@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"todo-app-go/application/user"
@@ -47,13 +48,21 @@ func (h *UserHandler) Register(c *gin.Context) {
 	email, err := value_object.FromStringEmail(req.Email)
 	rawPassword := value_object.FromStringRawPassword(req.Password)
 
-	token, err := h.registerUsecase.Register(email, rawPassword)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	userID, token, err := h.registerUsecase.Register(email, rawPassword)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":    userID,
+		"email": email.Value(),
+		"token": token})
 }
 
 // POST /login
@@ -65,6 +74,10 @@ func (h *UserHandler) Login(c *gin.Context) {
 	}
 
 	email, err := value_object.FromStringEmail(req.Email)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("invalid email format: %s", err.Error())})
+		return
+	}
 	rawPassword := value_object.FromStringRawPassword(req.Password)
 
 	token, err := h.loginUsecase.Login(email, rawPassword)

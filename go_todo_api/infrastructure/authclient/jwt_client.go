@@ -2,6 +2,7 @@ package authclient
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"time"
 	"todo-app-go/domain/auth"
@@ -19,7 +20,7 @@ func NewAuthClient() auth.IAuthClient {
 func (a *AuthClient) GenerateToken(userID string) (string, error) {
 	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
 	claims := jwt.MapClaims{
-		"sub": userID,
+		"sub": fmt.Sprintf("%v", userID),
 		"exp": time.Now().Add(24 * time.Hour).Unix(),
 	}
 

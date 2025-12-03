@@ -6,6 +6,6 @@ import (
 )
 
 type IUserRepository interface {
-	Save(user *entity.Users) error
+	Save(user *entity.Users) (string, error)
 	FindByEmail(email value_object.Email) (*entity.Users, error)
 }

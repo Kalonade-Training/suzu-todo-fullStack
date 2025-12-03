@@ -6,11 +6,23 @@ import (
 	"todo-app-go/infrastructure/authclient"
 	"todo-app-go/interface/middleware"
 
+	"time"
+
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	r := gin.Default()
+
+	// CORS設定
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"}, // React側
+		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+		MaxAge:           24 * time.Hour,
+	}))
 
 	// Controllerを初期化
 	userController, err := di.InitializedUserController()
@@ -20,8 +32,8 @@ func main() {
 
 	// ルーティング設定
 	//main
-	r.POST("/register", userController.Register)
-	r.POST("/login", userController.Login)
+	r.POST("/auth/register", userController.Register)
+	r.POST("/auth/login", userController.Login)
 
 	//todo
 	todoController, err := di.InitializedTodoController()
@@ -33,11 +45,14 @@ func main() {
 
 	authGroup := r.Group("/todos")
 	authGroup.Use(middleware.AuthMiddleware(authClient)) // 認証ミドルウェアを適用
-	authGroup.POST("/", todoController.CreateTodo)
-	authGroup.GET("/", todoController.GetTodos)
-	authGroup.PATCH("/:id", todoController.UpdateTodo)
-	authGroup.DELETE("/:id", todoController.DeleteTodo)
+	authGroup.POST("/create", todoController.CreateTodo)
+	authGroup.GET("", todoController.GetTodos)
+	authGroup.PATCH("/:id/update", todoController.UpdateTodo)
+	authGroup.DELETE("/:id/delete", todoController.DeleteTodo)
 	authGroup.POST("/:id/duplicate", todoController.DuplicateTodo)
+	authGroup.GET("/:id/detail", todoController.GetDetail)
+
+	// サーバー起動
 
 	r.Run(":8080") //サーバー起動
 

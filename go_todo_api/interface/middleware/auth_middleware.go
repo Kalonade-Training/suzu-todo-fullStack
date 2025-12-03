@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 	"todo-app-go/domain/auth"
 
 	"github.com/gin-gonic/gin"
@@ -14,6 +15,9 @@ func AuthMiddleware(authClient auth.IAuthClient) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "token required"})
 			return
 		}
+
+		token = strings.TrimPrefix(token, "Bearer")
+		token = strings.TrimSpace(token)
 
 		userID, err := authClient.VerifyToken(token) //verify tokenで検証
 		if err != nil {

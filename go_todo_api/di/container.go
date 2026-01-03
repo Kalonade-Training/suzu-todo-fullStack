@@ -1,5 +1,6 @@
 package di
 
+//依存関係を整理して正しい順序にする
 import (
 	"todo-app-go/application/todo"
 	"todo-app-go/application/user"

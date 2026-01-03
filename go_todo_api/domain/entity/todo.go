@@ -16,13 +16,22 @@ type Todos struct {
 	updatedAt   time.Time
 }
 
-func NewTodo(id value_object.TodoID, userID value_object.UserID, title value_object.Title, body value_object.Body, dueDate *value_object.DueDate, isCompleted value_object.IsCompleted, createdAt, updatedAt time.Time) Todos {
+func NewTodo(
+	id value_object.TodoID,
+	userID value_object.UserID,
+	title value_object.Title,
+	body value_object.Body,
+	dueDate *value_object.DueDate,
+	isCompleted value_object.IsCompleted,
+	createdAt time.Time,
+	updatedAt time.Time,
+) Todos {
 	return Todos{
 		id:          id,
 		userID:      userID,
 		title:       title,
 		body:        body,
-		dueDate:     dueDate,
+		dueDate:     dueDate, //ポインタ型
 		isCompleted: isCompleted,
 		createdAt:   createdAt,
 		updatedAt:   updatedAt,

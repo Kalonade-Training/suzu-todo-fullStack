@@ -1,5 +1,6 @@
 package repository
 
+//ITodoRepositoryの具体的な実装を提供するパッケージ
 import (
 	"fmt"
 	"time"
@@ -19,7 +20,7 @@ type TodoRepository struct {
 func (repo *TodoRepository) Delete(todoID value_object.TodoID) error {
 	err := repo.DB.Delete(&model.Todos{}, "id = ?", todoID.Value()).Error
 	if err != nil {
-		return fmt.Errorf("failed to delete todo: %w", err)
+		return fmt.Errorf("タスクを削除できません： %w", err)
 	}
 	return nil
 }
@@ -29,18 +30,20 @@ func (repo *TodoRepository) FindAll(userID value_object.UserID, filters reposito
 	var todos []model.Todos
 	query := repo.DB.Model(&model.Todos{}).Where("user_id = ?", userID.Value())
 
-	// フィルターの設定
-	if filters.Title != "" {
-		query = query.Where("title LIKE ?", "%"+filters.Title+"%")
+	if filters.Title != nil && *filters.Title != "" {
+		query = query.Where("title LIKE ?", "%"+*filters.Title+"%")
 	}
-	if filters.Body != "" {
-		query = query.Where("body LIKE ?", "%"+filters.Body+"%")
+
+	if filters.Body != nil && *filters.Body != "" {
+		query = query.Where("body LIKE ?", "%"+*filters.Body+"%")
 	}
-	if !filters.DueDateFrom.IsZero() {
-		query = query.Where("due_date >= ?", filters.DueDateFrom)
+
+	// ポインタに変更
+	if filters.DueDateFrom != nil {
+		query = query.Where("due_date >= ?", *filters.DueDateFrom)
 	}
-	if !filters.DueDateTo.IsZero() {
-		query = query.Where("due_date <= ?", filters.DueDateTo)
+	if filters.DueDateTo != nil {
+		query = query.Where("due_date <= ?", *filters.DueDateTo)
 	}
 	if filters.Completed != nil {
 		query = query.Where("is_completed = ?", *filters.Completed)
@@ -51,7 +54,7 @@ func (repo *TodoRepository) FindAll(userID value_object.UserID, filters reposito
 
 	// 実行
 	if err := query.Find(&todos).Error; err != nil {
-		return nil, fmt.Errorf("failed to find todos: %w", err)
+		return nil, fmt.Errorf("タスクが見つかりません： %w", err)
 	}
 
 	// model → entity 変換
@@ -68,7 +71,7 @@ func (repo *TodoRepository) Update(todo *entity.Todos) error {
 	modelTodo := entityToModelTodo(*todo)
 	err := repo.DB.Save(modelTodo).Error
 	if err != nil {
-		return fmt.Errorf("failed to update todo: %w", err)
+		return fmt.Errorf("タスクを更新できません： %w", err)
 	}
 	return nil
 }
@@ -83,7 +86,7 @@ func (repo *TodoRepository) Create(todo *entity.Todos) error {
 	modelTodo := entityToModelTodo(*todo)
 	err := repo.DB.Create(modelTodo).Error
 	if err != nil {
-		return fmt.Errorf("failed to create todo: %w", err)
+		return fmt.Errorf("タスクを生成できません： %w", err)
 	}
 	return nil
 }
@@ -93,7 +96,7 @@ func (repo *TodoRepository) FindByUserID(userID value_object.UserID) ([]entity.T
 	var todos []model.Todos
 	err := repo.DB.Where("user_id = ?", userID.Value()).Find(&todos).Error
 	if err != nil {
-		return nil, fmt.Errorf("failed to find todos: %w", err)
+		return nil, fmt.Errorf("タスクが見つかりません： %w", err)
 	}
 	var entities []entity.Todos
 	for _, t := range todos {
@@ -107,7 +110,7 @@ func (repo *TodoRepository) FindById(todoID value_object.TodoID) (*entity.Todos,
 	var todo model.Todos
 	err := repo.DB.Where("id = ?", todoID.Value()).First(&todo).Error
 	if err != nil {
-		return nil, fmt.Errorf("failed to find todo: %w", err)
+		return nil, fmt.Errorf("タスクが見つかりません: %w", err)
 	}
 	entityTodo := modelToEntityTodo(todo)
 	return &entityTodo, nil
@@ -144,7 +147,7 @@ func modelToEntityTodo(todo model.Todos) entity.Todos {
 	var dueDateVO *value_object.DueDate = nil
 	if todo.DueDate != nil && !todo.DueDate.IsZero() {
 		tmp, _ := value_object.FromTimeDueDate(*todo.DueDate)
-		dueDateVO = &tmp
+		dueDateVO = &tmp //pointer
 	} else {
 		dueDateVO = nil
 	}

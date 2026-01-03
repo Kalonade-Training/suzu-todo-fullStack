@@ -22,7 +22,7 @@ func (repo *UserRepository) Save(user *entity.Users) (string, error) {
 	modelUser := entityToModel(*user)
 	err := repo.DB.Create(modelUser).Error
 	if err != nil {
-		return "", fmt.Errorf("failed to save user: %w", err)
+		return "", fmt.Errorf("登録できません: %w", err)
 	}
 	return modelUser.ID, nil
 }
@@ -31,7 +31,7 @@ func (repo *UserRepository) FindByEmail(email value_object.Email) (*entity.Users
 	var users model.Users
 	err := repo.DB.Where("email = ?", email.Value()).First(&users).Error
 	if err != nil {
-		return nil, fmt.Errorf("failed to find user: %w", err)
+		return nil, fmt.Errorf("ユーザーが見つかりません: %w", err)
 	}
 	userEntity := modelToEntity(users)
 	return &userEntity, nil

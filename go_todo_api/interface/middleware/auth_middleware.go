@@ -12,7 +12,7 @@ func AuthMiddleware(authClient auth.IAuthClient) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization") //トークン取得
 		if token == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "token required"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "ログインが必要です"})
 			return
 		}
 
@@ -21,7 +21,7 @@ func AuthMiddleware(authClient auth.IAuthClient) gin.HandlerFunc {
 
 		userID, err := authClient.VerifyToken(token) //verify tokenで検証
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "ログインが必要です"})
 			return
 		}
 		//有効ならハンドラーへ保存

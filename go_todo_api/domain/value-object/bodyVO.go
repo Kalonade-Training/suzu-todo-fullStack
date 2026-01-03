@@ -2,6 +2,7 @@ package value_object
 
 import (
 	"errors"
+	"strings"
 )
 
 type Body struct {
@@ -10,10 +11,11 @@ type Body struct {
 
 // Bodyの生成関数
 func FromStringBody(v string) (Body, error) {
-	if len(v) == 0 || len(v) > 100 {
-		return Body{}, errors.New("body must be between 1 and 100 characters")
+	trimmed := strings.TrimSpace(v)
+	if len(trimmed) == 0 || len(trimmed) > 100 {
+		return Body{}, errors.New("本文は1文字以上100文字以下である必要があります")
 	}
-	return Body{value: v}, nil
+	return Body{value: trimmed}, nil
 }
 
 // Bodyの値を取得するメソッド

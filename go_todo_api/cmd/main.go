@@ -17,12 +17,14 @@ func main() {
 
 	// CORS設定
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"}, // React側
-		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Content-Type", "Authorization"},
-		AllowCredentials: true,
-		MaxAge:           24 * time.Hour,
+		AllowOrigins:     []string{"http://localhost:3000"},                     // React側URL
+		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"}, //使用するHTTPメソッド
+		AllowHeaders:     []string{"Content-Type", "Authorization"},             //許可するヘッダー
+		AllowCredentials: true,                                                  //クッキーの送信を許可
+		MaxAge:           24 * time.Hour,                                        //プリフライトリクエストのキャッシュ時間
 	}))
+
+	r.Use(middleware.ErrorHandler())
 
 	// Controllerを初期化
 	userController, err := di.InitializedUserController()
@@ -44,7 +46,7 @@ func main() {
 	authClient := authclient.NewAuthClient()
 
 	authGroup := r.Group("/todos")
-	authGroup.Use(middleware.AuthMiddleware(authClient)) // 認証ミドルウェアを適用
+	authGroup.Use(middleware.AuthMiddleware(authClient)) // 認証ミドルウェアをtodos/配下にすべて適用
 	authGroup.POST("/create", todoController.CreateTodo)
 	authGroup.GET("", todoController.GetTodos)
 	authGroup.PATCH("/:id/update", todoController.UpdateTodo)

@@ -13,6 +13,7 @@ func (p RawPassword) ComparePassword(rawPassword RawPassword, param any) any {
 }
 
 func FromStringRawPassword(v string) RawPassword {
+
 	return RawPassword{value: v}
 }
 
@@ -31,10 +32,6 @@ func (p RawPassword) Hash() (HashedPassword, error) {
 type HashedPassword struct {
 	value string
 }
-
-// func (p HashedPassword) HashPassword(rawPassword HashedPassword) (any, any) {
-// 	panic("unimplemented")
-// }
 
 func FromStringHashedPassword(v string) HashedPassword {
 	return HashedPassword{value: v}

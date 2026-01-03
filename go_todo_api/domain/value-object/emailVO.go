@@ -13,7 +13,7 @@ func FromStringEmail(v string) (Email, error) {
 	//	メールアドレス形式のチェック
 	regex := regexp.MustCompile(`^[\w._%+\-]+@[\w.\-]+\.[A-Za-z]{2,}$`)
 	if !regex.MatchString(v) {
-		return Email{}, errors.New("invalid email format")
+		return Email{}, errors.New("無効なメールアドレス形式です")
 	}
 	return Email{value: v}, nil
 }

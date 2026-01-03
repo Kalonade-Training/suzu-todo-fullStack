@@ -23,7 +23,7 @@ func (u *DeleteTodoUsecase) Delete(todoID value_object.TodoID) error {
 		return err
 	}
 	if existingTodo == nil {
-		return fmt.Errorf("todo not found")
+		return fmt.Errorf("タスクが存在しません")
 	}
 	// 存在する場合は削除を実行
 	return u.TodoRepo.Delete(todoID)

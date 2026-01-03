@@ -23,13 +23,13 @@ func (u *LoginUsecase) Login(email value_object.Email, rawPassword value_object.
 	// ユーザーをメールで検索
 	user, _ := u.UserRepo.FindByEmail(email)
 	if user == nil {
-		return "", errors.New("user not found")
+		return "", errors.New("ユーザーが存在しません")
 	}
 
 	// パスワードを照合
 	err := user.HashedPassword().ComparePassword(rawPassword)
 	if err != nil {
-		return "", errors.New("invalid credentials")
+		return "", errors.New("パスワードが正しくありません")
 	}
 
 	token, err := u.authClient.GenerateToken(user.ID().Value())

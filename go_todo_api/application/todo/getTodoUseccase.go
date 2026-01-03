@@ -4,7 +4,7 @@ import (
 	"time"
 	"todo-app-go/domain/entity"
 	"todo-app-go/domain/repository"
-	value_object "todo-app-go/domain/value-object"
+	vo "todo-app-go/domain/value-object"
 )
 
 type GetTodoUsecase struct {
@@ -18,27 +18,34 @@ func NewGetTodoUsecase(todoRepo repository.ITodoRepository) *GetTodoUsecase {
 }
 
 func (uc *GetTodoUsecase) Execute(
-	userID value_object.UserID,
-	title string,
-	body string,
+	userID vo.UserID,
+	title *vo.Title,
+	body *vo.Body,
 	dueDateFrom *time.Time,
 	dueDateTo *time.Time,
 	completed *bool,
 ) ([]entity.Todos, error) {
+
+	var titleStr *string
+	if title != nil {
+		v := title.Value()
+		titleStr = &v
+	}
+
+	var bodyStr *string
+	if body != nil {
+		v := body.Value()
+		bodyStr = &v
+	}
+
 	// フィルタを作成
 	filters := repository.TodoFilters{
-		Title: title,
-		Body:  body,
+		Title:       titleStr,
+		Body:        bodyStr,
+		DueDateFrom: dueDateFrom, // そのまま渡す
+		DueDateTo:   dueDateTo,   // そのまま渡す
+		Completed:   completed,
 	}
-	// DueDate の範囲指定があれば設定
-	if dueDateFrom != nil {
-		filters.DueDateFrom = *dueDateFrom
-	}
-	if dueDateTo != nil {
-		filters.DueDateTo = *dueDateTo
-	}
-	// Completed の指定があれば設定
-	filters.Completed = completed
 
 	// リポジトリのメソッドを呼び出す
 	return uc.TodoRepo.FindAll(userID, filters)

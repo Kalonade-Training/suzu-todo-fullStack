@@ -20,7 +20,7 @@ func NewGetDetailTodoUsecase(todoRepo repository.ITodoRepository) *GetDetailTodo
 func (u *GetDetailTodoUsecase) GetDetail(todoID value_object.TodoID) (*entity.Todos, error) {
 	todo, err := u.TodoRepo.FindById(todoID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get todo detail: %w", err)
+		return nil, fmt.Errorf("タスクの詳細を取得できませんでした: %w", err)
 	}
 	return todo, nil
 }

@@ -5,41 +5,42 @@ import (
 	"time"
 	"todo-app-go/domain/entity"
 	"todo-app-go/domain/repository"
-	value_object "todo-app-go/domain/value-object"
+	vo "todo-app-go/domain/value-object"
 )
 
 type DuplicateTodoUsecase struct {
-	repo repository.ITodoRepository
+	TodoRepo repository.ITodoRepository
 }
 
-func NewDuplicateTodoUsecase(repo repository.ITodoRepository) *DuplicateTodoUsecase {
-	return &DuplicateTodoUsecase{repo: repo}
+func NewDuplicateTodoUsecase(todoRepo repository.ITodoRepository) *DuplicateTodoUsecase {
+	return &DuplicateTodoUsecase{TodoRepo: todoRepo}
 }
 
-func (u *DuplicateTodoUsecase) Duplicate(originalTodoID value_object.TodoID) error {
+func (u *DuplicateTodoUsecase) Duplicate(originalTodoID vo.TodoID) error {
 	// 元のTODOを取得
-	originalTodo, err := u.repo.FindById(originalTodoID)
+	originalTodo, err := u.TodoRepo.FindById(originalTodoID)
 	if err != nil {
-		return fmt.Errorf("failed to find original todo: %w", err)
+		return fmt.Errorf("元のタスクが見つかりません: %w", err)
 	}
 	// 修正：DueDate VO のポインタを準備
-	var dueDateVO *value_object.DueDate = nil
+	// DueDate は nil を考慮してコピー
+	var dueDate *vo.DueDate
 	if originalTodo.DueDate() != nil {
-		tmp := *originalTodo.DueDate() // 一旦値にする
-		dueDateVO = &tmp
+		d := *originalTodo.DueDate()
+		dueDate = &d
 	}
 
 	// 複製するTODOエンティティを作成
 	duplicatedTodo := entity.NewTodo(
-		value_object.NewTodoID(),
+		vo.NewTodoID(),
 		originalTodo.UserID(),
 		originalTodo.Title(),
 		originalTodo.Body(),
-		dueDateVO,
-		value_object.NewIsCompleted(false), // 複製時は未完了に設定
+		dueDate,
+		vo.NewIsCompleted(false), // 複製時は未完了に設定
 		time.Now(),
 		time.Now(),
 	)
 	// 複製したTODOを保存
-	return u.repo.Create(&duplicatedTodo)
+	return u.TodoRepo.Create(&duplicatedTodo)
 }

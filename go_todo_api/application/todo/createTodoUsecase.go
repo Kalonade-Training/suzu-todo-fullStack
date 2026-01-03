@@ -19,44 +19,15 @@ func NewCreateTodoUsecase(todoRepo repository.ITodoRepository) *CreateTodoUsecas
 }
 
 func (u *CreateTodoUsecase) Execute(
-	userIDStr string,
-	titleStr string,
-	bodyStr string,
-	dueDateValue *time.Time,
+	userID vo.UserID,
+	title vo.Title,
+	body vo.Body,
+	dueDatePtr *vo.DueDate,
 ) (*entity.Todos, error) {
-
-	userID, err := vo.FromStringUserID(userIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid user ID: %w", err)
-	}
-
-	title, err := vo.FromStringTitle(titleStr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid title: %w", err)
-	}
-
-	body, err := vo.FromStringBody(bodyStr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid body: %w", err)
-	}
-
-	// DueDate VO のポインタ
-	var dueDatePtr *vo.DueDate
-
-	// 修正: dueDateValue が nil でない（つまり日付が指定されている）場合のみ VO を生成
-	if dueDateValue != nil {
-		// *time.Time をデリファレンスして time.Time 値を取り出し、VOを生成
-		dueDateVO, err := vo.FromTimeDueDate(*dueDateValue)
-		if err != nil {
-			return nil, fmt.Errorf("invalid due date: %w", err)
-		}
-		// 生成したVOのポインタをセット
-		dueDatePtr = &dueDateVO
-	}
-
+	titleValue := title.Value()
 	// 重複タイトルチェック
 	filters := repository.TodoFilters{
-		Title: title.Value(),
+		Title: &titleValue,
 	}
 
 	existing, err := u.TodoRepo.FindAll(userID, filters)
@@ -64,7 +35,7 @@ func (u *CreateTodoUsecase) Execute(
 		return nil, err
 	}
 	if len(existing) > 0 {
-		return nil, fmt.Errorf("todo with this title already exists")
+		return nil, fmt.Errorf("同じタイトルのタスクが既に存在します")
 	}
 
 	newTodo := entity.NewTodo(

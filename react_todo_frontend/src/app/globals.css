@@ -240,23 +240,23 @@ textarea{
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis; 
+  color: #5b5c5e;
 }
 .todo-dueDate{
   width: 20%;
-  flex-shrink: 0;
+  min-width: 120px;
   text-align: center;
   min-width: 100px;
 }
 .todo-completed{
   width: 15%;
   text-align: center;
-  flex-shrink: 0;
 }
 .buttonlighter{
   color: #4f46e5;
   padding: 0.5rem 1rem;
   border-radius: 4px;
-  text-align:center;
+  text-align: center;
   display:block;
   width: fit-content;
   float:right;
@@ -312,4 +312,113 @@ textarea{
 .detail-body{
   margin-right:20px;
   word-break: break-all;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.header {
+  height: 64px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #fff;
+}
+
+.title {
+  margin-top: 10px;
+  font-size: 20px;
+  font-weight: 600;
+  border: none;
+}
+
+/* 右側 */
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.email {
+  font-size: 15px;
+  color: #8a8a8d;
+  font-weight: 300;
+}
+.button-space{
+  display:flex;
+  gap:100px;
+  margin-top:20px;
+}
+
+.auth-card{
+   border: 2px solid #8659f6ff;
+  border-radius: 8px;
+  background-color: #f7f5fbff;
+  margin:20px auto;
+  width:60%;
+}
+
+/* ===== スマホ対応 ===== */
+@media (max-width: 767px) {
+  .header {
+    padding: 0 12px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .email {
+    display: none; /* ←ここ重要 */
+  }
+  .nonetext{
+    display: none;
+  }
+  .todo-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .todo-title,
+  .todo-body,
+  .todo-dueDate,
+  .todo-completed {
+    width: 100%;
+    min-width: unset;
+    text-align: left;
+  }
+
+  .todo-body {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .todo-dueDate {
+    font-size: 0.875rem;
+  }
+
+  .todo-completed {
+    font-size: 0.875rem;
+  }
+  .buttonlighter{
+    float: right;
+    padding-top: 15px;
+    width:6px;
+  }
+  .button-space{
+    font-size: 15px;
+    gap:1px;
+    margin-top:20px;
+  }
+  .auth-card{
+    width:90%;
+  }
 }

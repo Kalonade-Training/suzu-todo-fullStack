@@ -14,7 +14,7 @@ type IsCompleted struct {
 func FromBoolIsCompleted(v bool) (IsCompleted, error) {
 	regex := regexp.MustCompile(`^(true|false)$`)
 	if !regex.MatchString(strconv.FormatBool(v)) {
-		return IsCompleted{}, errors.New("invalid isCompleted format")
+		return IsCompleted{}, errors.New("完了状態が無効です")
 	}
 	return IsCompleted{value: v}, nil
 }

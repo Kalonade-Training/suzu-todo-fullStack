@@ -36,7 +36,7 @@ func (a *AuthClient) VerifyToken(tokenString string) (string, error) {
 	})
 
 	if err != nil || !token.Valid {
-		return "", errors.New("invalid token")
+		return "", errors.New("ログインが必要です")
 	}
 
 	// token.Claims を mapClaims として取得
@@ -46,5 +46,5 @@ func (a *AuthClient) VerifyToken(tokenString string) (string, error) {
 		}
 	}
 
-	return "", errors.New("invalid token claims")
+	return "", errors.New("ログインが必要です")
 }

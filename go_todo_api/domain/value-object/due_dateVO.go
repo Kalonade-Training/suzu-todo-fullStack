@@ -24,7 +24,7 @@ func FromTimeDueDate(v time.Time) (DueDate, error) {
 
 	// 過去日ならエラー
 	if vDate.Before(today) {
-		return DueDate{}, errors.New("due date cannot be in the past")
+		return DueDate{}, errors.New("期限日は今日以降の日付である必要があります")
 	}
 
 	return DueDate{value: v}, nil

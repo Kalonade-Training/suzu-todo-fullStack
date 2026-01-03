@@ -1,50 +1,20 @@
 //register
 "use client"
 
-import {useState} from "react"
-import { registerUser } from "../../features/user_api"
-import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Mail} from 'lucide-react';
+import { useRegisterViewModel } from '../../viewModel/user/registerViewModel';
 
 export default function Register(){
-    const router = useRouter();
-
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [message, setMessage] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
-
-    const handleRegister = async(e: React.FormEvent) => {
-        e.preventDefault();
-
-        //入力を登録
-        try{
-            const newUser = await registerUser({
-                email,
-                password,
-            });
-
-            
-
-            if(!newUser){
-                setMessage("ログイン失敗")
-                //入力リセット
-                setEmail("");
-                setPassword("");
-                return;
-            }
-            //入力リセット
-            setEmail("");
-            setPassword("");
-            
-            setMessage(`作成成功！ID：${newUser.id}`);
-            router.push("/login"); // loginページに遷移
-
-        }catch(err:any){
-            setMessage(err.message)
-            console.log("failed to create user");
-        }
-    };
+  const {
+    email,
+    setEmail,
+    password,   
+    setPassword,
+    showPassword,
+    setShowPassword,
+    handleRegister,
+  } = useRegisterViewModel();
+  
 
     return(
         <>
@@ -56,13 +26,7 @@ export default function Register(){
                
 
                 {/** 新規登録フォーム */}
-                <div style={{ 
-                    border: "2px solid #f94fa1f4", 
-                    borderRadius: "8px",
-                    backgroundColor: "#fbfafaf4",
-                    margin:"20px auto",
-                    width:"60%"
-                }}> 
+                <div  className="auth-card" style={{ border: "2px solid #f94fa1f4", }}> 
                 <div style={{backgroundColor:"#f94fa1f4", color:"white",padding:"15px"}}>
                     <h1 style={{paddingTop:0, color:'white',fontSize:'23px'}}>新規登録</h1>
                     <p style={{ fontSize:"15px"}}>アカウントを登録して始めましょう。</p>
@@ -158,8 +122,10 @@ export default function Register(){
 
                     </form>
                 </div>
-                {message && <p className = "message">{message}</p>}
             </div>
+            <div className = "text-align">
+                        <a href="/login" >ログインはこちら</a>
+        </div>
         </>
     )
 }

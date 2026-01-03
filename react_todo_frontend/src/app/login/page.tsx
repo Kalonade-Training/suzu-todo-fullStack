@@ -1,39 +1,19 @@
 //login
 "use client"
 
-import {useState} from "react"
-import { useRouter} from "next/navigation"
-import {loginUser} from "../../features/user_api"
 import { Eye, EyeOff, Mail} from 'lucide-react';
+import { useLoginViewModel } from "../../viewModel/user/loginViewModel";
 
 export default function Login(){
-    const router = useRouter();
-
-    const [email, setEmail] = useState("");
-    const[password, setPassword] = useState("");
-    const [message, setMessage] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
-
-
-    //ログイン処理
-    const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      const res = await loginUser({ email, password });
-      localStorage.setItem("token", res.token); // token 保存
-
-      setMessage("ログイン成功！");
-      //入力リセット
-        setEmail("");
-        setPassword("");
-      router.push("/todos"); // TODO一覧ページに遷移
-    } catch (err:any) {
-      setMessage(err.message);
-    }
-  };
-
-
+    const {
+    email,
+    password,
+    showPassword,
+    setEmail,
+    setPassword,
+    setShowPassword,
+    handleLogin,
+  } = useLoginViewModel();
 
     return(
     <>
@@ -42,13 +22,7 @@ export default function Login(){
         </header>
 
         {/** ログインフォーム */}
-        <div style={{ 
-          border: "2px solid #8659f6ff", 
-          borderRadius: "8px",
-          backgroundColor: "#f7f5fbff",
-          margin:"20px auto",
-          width:"60%"
-        }}>
+        <div className="auth-card">
             <div style={{backgroundColor:"#8659f6ff", color:"white",padding:"15px"}}>
                     <h2 style={{padding:0, color:'white'}}>ログイン</h2>
             </div>
@@ -139,7 +113,6 @@ export default function Login(){
         <div className = "text-align">
                             <a href="/register" >新規登録はこちら</a>
         </div>
-        {message && <p className="message">{message}</p>}
     </>
     );
 }

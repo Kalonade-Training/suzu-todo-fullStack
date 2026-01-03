@@ -1,12 +1,11 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 	"todo-app-go/application/todo"
-	value_object "todo-app-go/domain/value-object"
+	vo "todo-app-go/domain/value-object"
 
 	"github.com/gin-gonic/gin"
 )
@@ -41,9 +40,11 @@ func NewTodoHandler(
 // GET /todos/:id/detail
 func (h *TodoHandler) GetDetail(c *gin.Context) {
 	// URLパラメータからTodoIDを取得
-	todoID, err := value_object.FromStringTodoID(c.Param("id"))
+	todoID, err := vo.FromStringTodoID(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid todo ID"})
+		c.JSON(http.StatusNotFound, gin.H{ //404に修正
+			"error": "指定されたタスクが見つかりません",
+		})
 		return
 	}
 	// ユースケースを呼び出し
@@ -83,44 +84,60 @@ func (h *TodoHandler) CreateTodo(c *gin.Context) {
 		DueDate string `json:"due_date"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Error(err)
+		c.Abort()
+		return
+	}
+	// valueObjectをユースケースから移動
+	userID, err := vo.FromStringUserID(c.GetString("userID"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ユーザーIDが不正です"})
+		return
+	}
+
+	title, err := vo.FromStringTitle(req.Title)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// ユーザーIDを取得
-	userIDStr := c.GetString("userID")
-	// DueDate を日本時間でパース
-	var dueDateValue *time.Time
 
+	body, err := vo.FromStringBody(req.Body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var dueDatePtr *vo.DueDate
 	if req.DueDate != "" {
-		// DueDate を日本時間でパース
 		loc := time.FixedZone("Asia/Tokyo", 9*60*60)
-		// 日付だけの形式を想定 "YYYY-MM-DD"
-		v, err := time.ParseInLocation("2006-01-02", req.DueDate, loc)
+		t, err := time.ParseInLocation("2006-01-02", req.DueDate, loc)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid due date format (expected YYYY-MM-DD)"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "日付形式が不正です"})
 			return
 		}
-		dueDateValue = &v // ポインタとして有効な値をセット
 
-		// DueDate value object の validation のみ実行
-		// パースしたtime.Time値でVOのバリデーションを実施
-		_, err = value_object.FromTimeDueDate(v)
+		dueDateVO, err := vo.FromTimeDueDate(t)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
+		dueDatePtr = &dueDateVO
 	}
+
 	// ユースケースを呼び出し
-	newTodo, err := h.createTodoUsecase.Execute(userIDStr, req.Title, req.Body, dueDateValue)
+	newTodo, err := h.createTodoUsecase.Execute(
+		userID,
+		title,
+		body,
+		dueDatePtr,
+	)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("failed to create todo: %s", err.Error())})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{
-		"message": "Todo created successfully",
-		"id":      newTodo.ID().Value(), // 新しいIDをフロントエンドに返す
-		"todo":    newTodo,              // 必要に応じてエンティティ全体も返す
+		"id":   newTodo.ID().Value(), // 新しいIDをフロントエンドに返す
+		"todo": newTodo,              // 必要に応じてエンティティ全体も返す
 	})
 }
 
@@ -128,20 +145,39 @@ func (h *TodoHandler) CreateTodo(c *gin.Context) {
 func (h *TodoHandler) GetTodos(c *gin.Context) {
 	//ユーザーIDを取得
 	userIDStr := c.GetString("userID")
-	userID, err := value_object.FromStringUserID(userIDStr)
+	userID, err := vo.FromStringUserID(userIDStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "ログインしてください",
+		})
 		return
 	}
 	// クエリパラメータを取得
-	title := c.Query("title")
-	body := c.Query("body")
+	var titleVO *vo.Title
+	if s := c.Query("title"); s != "" {
+		vo, err := vo.FromStringTitle(s)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		titleVO = &vo
+	}
+
+	var bodyVO *vo.Body
+	if s := c.Query("body"); s != "" {
+		vo, err := vo.FromStringBody(s)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		bodyVO = &vo
+	}
 
 	var dueDateFromPtr, dueDateToPtr *time.Time
 	if s := c.Query("due_date_from"); s != "" {
 		t, err := time.Parse("2006-01-02", s)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid due_date_from"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "無効な日付です"})
 			return
 		}
 		dueDateFromPtr = &t
@@ -149,7 +185,7 @@ func (h *TodoHandler) GetTodos(c *gin.Context) {
 	if s := c.Query("due_date_to"); s != "" {
 		t, err := time.Parse("2006-01-02", s)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid due_date_to"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "無効な日付です"})
 			return
 		}
 		dueDateToPtr = &t
@@ -159,13 +195,20 @@ func (h *TodoHandler) GetTodos(c *gin.Context) {
 	if s := c.Query("completed"); s != "" {
 		b, err := strconv.ParseBool(s)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid completed value"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "完了状態が無効です"})
 			return
 		}
 		completedPtr = &b
 	}
 	// ユースケースを呼び出し
-	todos, err := h.getTodoUsecase.Execute(userID, title, body, dueDateFromPtr, dueDateToPtr, completedPtr)
+	todos, err := h.getTodoUsecase.Execute(
+		userID,
+		titleVO,
+		bodyVO,
+		dueDateFromPtr,
+		dueDateToPtr,
+		completedPtr,
+	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -196,9 +239,11 @@ func (h *TodoHandler) GetTodos(c *gin.Context) {
 // PATCH /todos/:id/update
 func (h *TodoHandler) UpdateTodo(c *gin.Context) {
 	// URLパラメータからTodoIDを取得
-	todoID, err := value_object.FromStringTodoID(c.Param("id"))
+	todoID, err := vo.FromStringTodoID(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid todo ID"})
+		c.JSON(http.StatusNotFound, gin.H{ //404に修正
+			"error": "指定されたタスクが見つかりません",
+		})
 		return
 	}
 
@@ -210,23 +255,49 @@ func (h *TodoHandler) UpdateTodo(c *gin.Context) {
 		Completed bool   `json:"completedAt"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Error(err)
+		c.Abort()
+		return
+	}
+
+	//ValueObject 変換
+	titleVO, err := vo.FromStringTitle(req.Title)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// 期日文字列を timeに変換
-	var dueDatePtr *time.Time
+	bodyVO, err := vo.FromStringBody(req.Body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	isCompletedVO := vo.NewIsCompleted(req.Completed)
+
+	var dueDateVO *vo.DueDate
 	if req.DueDate != "" {
 		t, err := time.Parse("2006-01-02", req.DueDate)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format (expected YYYY-MM-DD)"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "日付形式が正しくありません"})
 			return
 		}
-		dueDatePtr = &t // ポインタとしてセット
+		d, err := vo.FromTimeDueDate(t)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		dueDateVO = &d
 	}
 
 	// Usecase実行
-	err = h.updateTodoUsecase.Update(todoID, req.Title, req.Body, dueDatePtr, req.Completed)
+	err = h.updateTodoUsecase.Update(
+		todoID,
+		titleVO,
+		bodyVO,
+		dueDateVO,
+		isCompletedVO,
+	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -264,9 +335,11 @@ func (h *TodoHandler) UpdateTodo(c *gin.Context) {
 // DELETE /todos/:id
 func (h *TodoHandler) DeleteTodo(c *gin.Context) {
 	// URLパラメータからTodoIDを取得
-	todoID, err := value_object.FromStringTodoID(c.Param("id"))
+	todoID, err := vo.FromStringTodoID(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid todo ID"})
+		c.JSON(http.StatusNotFound, gin.H{ //404に修正
+			"error": "指定されたタスクが見つかりません",
+		})
 		return
 	}
 	// Usecase実行
@@ -276,15 +349,17 @@ func (h *TodoHandler) DeleteTodo(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Todo deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "タスクが削除されました！"})
 }
 
 // POST /todos/:id/duplicate
 func (h *TodoHandler) DuplicateTodo(c *gin.Context) {
 	// URLパラメータからTodoIDを取得
-	todoID, err := value_object.FromStringTodoID(c.Param("id"))
+	todoID, err := vo.FromStringTodoID(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid todo ID"})
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "指定されたタスクが見つかりません",
+		})
 		return
 	}
 	// Usecase実行
@@ -294,5 +369,5 @@ func (h *TodoHandler) DuplicateTodo(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Todo duplicated successfully"})
+	c.JSON(http.StatusCreated, gin.H{"message": "タスクが複製されました！"})
 }

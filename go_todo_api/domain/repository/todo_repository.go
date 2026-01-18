@@ -2,7 +2,7 @@ package repository
 
 import (
 	"todo-app-go/domain/entity"
-	value_object "todo-app-go/domain/value-object"
+	value_object "todo-app-go/domain/vo"
 )
 
 // Todoエンティティのリポジトリインターフェースを定義

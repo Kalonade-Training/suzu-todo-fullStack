@@ -7,7 +7,7 @@ import (
 	"todo-app-go/domain/auth"
 	"todo-app-go/domain/entity"
 	"todo-app-go/domain/repository"
-	value_object "todo-app-go/domain/value-object"
+	value_object "todo-app-go/domain/vo"
 )
 
 type RegisterUsecase struct {

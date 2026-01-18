@@ -5,7 +5,7 @@ import (
 	"time"
 	"todo-app-go/domain/entity"
 	"todo-app-go/domain/repository"
-	vo "todo-app-go/domain/value-object"
+	vo "todo-app-go/domain/vo"
 )
 
 type UpdateTodoUsecase struct {

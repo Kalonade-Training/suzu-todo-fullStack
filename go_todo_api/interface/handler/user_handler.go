@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"todo-app-go/application/user"
-	value_object "todo-app-go/domain/value-object"
+	value_object "todo-app-go/domain/vo"
 
 	"github.com/gin-gonic/gin"
 )

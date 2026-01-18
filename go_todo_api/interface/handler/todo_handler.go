@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 	"todo-app-go/application/todo"
-	vo "todo-app-go/domain/value-object"
+	vo "todo-app-go/domain/vo"
 
 	"github.com/gin-gonic/gin"
 )

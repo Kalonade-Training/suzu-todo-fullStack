@@ -6,7 +6,7 @@ import (
 	"time"
 	"todo-app-go/domain/entity"
 	"todo-app-go/domain/repository"
-	value_object "todo-app-go/domain/value-object"
+	value_object "todo-app-go/domain/vo"
 	"todo-app-go/infrastructure/database/model"
 
 	"gorm.io/gorm"

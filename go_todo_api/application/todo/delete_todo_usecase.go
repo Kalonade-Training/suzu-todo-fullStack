@@ -3,7 +3,7 @@ package todo
 import (
 	"fmt"
 	"todo-app-go/domain/repository"
-	value_object "todo-app-go/domain/value-object"
+	value_object "todo-app-go/domain/vo"
 )
 
 type DeleteTodoUsecase struct {

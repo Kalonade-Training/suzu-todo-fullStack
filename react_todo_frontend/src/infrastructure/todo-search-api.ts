@@ -1,5 +1,4 @@
-import {Todo} from "./todo_api"
-import { searchValidation } from "../viewModel/value-object/validation";
+import {Todo} from "./todo-api"
 
 //API通信を行う関数
 
@@ -38,10 +37,6 @@ export const searchTodos = async (
       "completed",
       (params.status === "completed").toString()
     );
-  }
-  const error = searchValidation(params.keyword || "");
-  if (error) {
-    throw new Error(error);
   }
 
   const res = await fetch(`${API_URL}/todos?${query.toString()}`, {

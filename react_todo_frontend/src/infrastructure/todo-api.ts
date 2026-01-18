@@ -1,5 +1,3 @@
-import { validation, searchValidation } from "../viewModel/value-object/validation";
-
 //API通信を行う関数
 export interface Todo {
   id: string;
@@ -47,11 +45,6 @@ export const getTodos = async (token: string): Promise<Todo[]> => { //async:非�
 
 // Todo作成API
 export const createTodo = async (token: string, todo: Omit<Todo, 'id' | 'user_id' | 'isCompleted' | 'createdAt' | 'updatedAt'>): Promise<Todo> => {  //omit:指定したプロパティを除外した型を作成
-    // バリデーション
-    const error = validation(todo.title, todo.body);
-    if (error) {
-        throw new Error(error);
-    } 
     const res = await fetch(`${API_URL}/todos/create`, {
         method: 'POST',
         headers: {
@@ -74,11 +67,6 @@ export const createTodo = async (token: string, todo: Omit<Todo, 'id' | 'user_id
 
 // Todo更新API
 export const updateTodo = async (id: string, token: string, todo: Partial<Omit<Todo, 'id' | 'user_id' | 'createdAt' | 'updatedAt'>>): Promise<Todo> => { //Partial:Omit以外のプロパティも任意で更新可能
-    // バリデーション
-    const error = validation(todo.title || "", todo.body || "");
-    if (error) {
-        throw new Error(error);
-    }
     const res = await fetch(`${API_URL}/todos/${id}/update`, {
         method: 'PATCH',
         headers: {

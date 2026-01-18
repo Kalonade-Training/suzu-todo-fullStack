@@ -2,10 +2,12 @@
 import { useEffect, useState } from "react";
 import { 
   createTodo
-} from "../../model/todo_api";
+} from "../../infrastructure/todo-api";
 import {useRouter} from "next/navigation"
 import { toast } from 'react-toastify';
-import { set } from "zod";
+import { TitleVO } from "../../domain/value-object/TitleVO";
+import { BodyVO } from "../../domain/value-object/BodyVO";
+
 
 export const useCreateViewModel = () => {
   const router = useRouter();
@@ -38,11 +40,17 @@ export const useCreateViewModel = () => {
       return;
     }
     setStatus("loading");
-    //入力を保存
+    
+    
+
     try{
+      //バリデーション
+      const titleVO =  TitleVO(title);
+      const bodyVO = BodyVO(body);
+
       const newTodo = await createTodo(token,{
-        title,
-        body,
+        title: titleVO,
+        body: bodyVO,
         dueDate,//formからonchangeで取得した文字列をそのまま渡す
       });
       toast.success(`タスク作成成功！`);
@@ -59,6 +67,7 @@ export const useCreateViewModel = () => {
     }catch(err:any){
       toast.error(err.message);
       console.log("failed to create todo");
+      setStatus("success");
     }
   };
 

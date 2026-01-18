@@ -1,9 +1,10 @@
 // allTodos
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getTodos, Todo, getTodoDetail, updateTodo } from "../../model/todo_api";
-import { searchTodos } from "../../model/todo_search_api";
+import { getTodos, Todo, getTodoDetail, updateTodo } from "../../infrastructure/todo-api";
+import { searchTodos } from "../../infrastructure/todo-search-api";
 import { toast } from "react-toastify";
+import { KeywordVO } from "../../domain/value-object/KeywordVO";
 
 export const useTodoListViewModel = () => {
   const router = useRouter();
@@ -23,6 +24,7 @@ export const useTodoListViewModel = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [loginChecked, setLoginChecked] = useState(false);
   const [status, setStatus] = useState<"loading" | "success">("loading");
+  const [keywordError, setKeywordError] = useState<string | null>(null);
 
   // 初期データ取得
   useEffect(() => {
@@ -50,6 +52,7 @@ export const useTodoListViewModel = () => {
       } catch (err) {
         toast.error(`${(err as Error).message}`);
         console.error("Failed to fetch todos", err);
+        setStatus("success");
       }
     };
 
@@ -59,13 +62,24 @@ export const useTodoListViewModel = () => {
   useEffect(() => {
     let result = [...todos];
 
-    // キーワード検索
-    if (searchKeyword.trim()) {
-      result = result.filter(todo =>
-        todo.title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-        todo.body.toLowerCase().includes(searchKeyword.toLowerCase())
-      );
+    try{
+      // バリデーション
+      const keywordVO = KeywordVO(searchKeyword);
+      setKeywordError(null);
+      if (keywordVO.trim()) {
+        // 大文字小文字を区別しない検索
+        result = result.filter(todo =>
+          todo.title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+          todo.body.toLowerCase().includes(searchKeyword.toLowerCase())
+        );
+      }
+    }catch(err:any){
+      setKeywordError(err.message);
+
+      return;
     }
+    
+    
 
     // 進捗状態フィルター
     if (filterStatus === "completed") {
@@ -97,6 +111,13 @@ export const useTodoListViewModel = () => {
     setFilteredTodos(result);
   }, [searchKeyword, filterStatus, filterDueDateFrom, filterDueDateTo, todos]);
 
+  useEffect(() => {
+    if (keywordError) {
+      toast.error(keywordError);
+    }
+  }, [keywordError]);
+
+
   // バックエンド検索処理
   const handleBackendSearch = async () => {
     const token = localStorage.getItem("token");
@@ -105,8 +126,9 @@ export const useTodoListViewModel = () => {
     const toastId = toast.loading("検索中...");
 
     try {
+      const keywordVO = KeywordVO(searchKeyword);
       const todosData = await searchTodos(token, {
-      keyword: searchKeyword,
+      keyword: keywordVO,
       dueDateFrom: filterDueDateFrom,
       dueDateTo: filterDueDateTo,
       status: filterStatus,

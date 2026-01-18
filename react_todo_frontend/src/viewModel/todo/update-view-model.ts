@@ -1,9 +1,10 @@
 //update
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { updateTodo, getTodoDetail, Todo } from "../../model/todo_api"; // getTodoDetailをインポート
+import { updateTodo, getTodoDetail, Todo } from "../../infrastructure/todo-api"; // getTodoDetailをインポート
 import { toast } from 'react-toastify';
-import { set } from "zod";
+import { TitleVO } from "../../domain/value-object/TitleVO";
+import { BodyVO } from "../../domain/value-object/BodyVO";
 
 export const useUpdateViewModel = () => {
   const router = useRouter(); 
@@ -69,9 +70,13 @@ export const useUpdateViewModel = () => {
     }
     setUpdating(true);
     try {
+      //バリデーション
+      const titleVO =  TitleVO(title);
+      const bodyVO = BodyVO(body);
+
       const updatedTodo = await updateTodo(id, token, {
-        title,
-        body,
+        title: titleVO,
+        body: bodyVO,
         dueDate,
         isCompleted,//form内のonchangeで更新された値を送信
       });

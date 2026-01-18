@@ -1,7 +1,7 @@
 // allTodosページ
 "use client";
 
-import { useTodoListViewModel } from "../../viewModel/todo/todoViewModel";
+import { useTodoListViewModel } from "../../viewModel/todo/todo-view-model";
 import { Plus, Pencil, Search, Filter, X,  } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -521,7 +521,9 @@ export default function TodoListPage() {
               >
                 <h2 className="todo-title">{todo.title}</h2>
                 <p className="todo-body">{todo.body}</p>
-                <p className="todo-dueDate">期限: {todo.dueDate}</p>
+                <p className="todo-dueDate">
+                  期限: {todo.dueDate || " 未設定"}
+                </p>
                 <div className="checkbox">
                   <label className="label">進捗：</label>
                   <input
@@ -552,7 +554,9 @@ export default function TodoListPage() {
             >
               <h2 className="todo-title">{todo.title}</h2>
               <p className="todo-body">{todo.body}</p>
-              <p className="todo-dueDate">期限: {todo.dueDate}</p>
+              <p className="todo-dueDate">
+                  期限: {todo.dueDate || " 未設定"}
+              </p>
               <p className="todo-completed">
                 進捗: {todo.isCompleted ? "✅" : "❌"}
               </p>

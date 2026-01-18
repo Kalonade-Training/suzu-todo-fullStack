@@ -2,7 +2,7 @@
 "use client";
 
 import LoadingSpinner from "@/src/components/ui/loadingSpinner";
-import { useUpdateViewModel } from "../../../../viewModel/todo/updateViewModel";
+import { useUpdateViewModel } from "../../../../viewModel/todo/update-view-model";
 import { useRouter } from "next/navigation";
 
 export default function TodoDetailPage() {

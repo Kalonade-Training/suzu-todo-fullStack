@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { deleteTodo, getTodoDetail, Todo } from "../../model/todo_api";
+import { deleteTodo, getTodoDetail, Todo } from "../../infrastructure/todo-api";
 import { toast } from 'react-toastify';
 
 export const useDeleteViewModel = () => {

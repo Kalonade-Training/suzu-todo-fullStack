@@ -2,7 +2,7 @@
 "use client"
 
 import { Eye, EyeOff, Mail} from 'lucide-react';
-import { useLoginViewModel } from "../../viewModel/user/loginViewModel";
+import { useLoginViewModel } from "../../viewModel/user/login-view-model";
 
 export default function Login(){
     const {

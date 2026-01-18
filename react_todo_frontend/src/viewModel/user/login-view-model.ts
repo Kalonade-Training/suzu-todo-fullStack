@@ -1,7 +1,7 @@
 //login
 import {useState} from "react"
 import { useRouter} from "next/navigation"
-import {loginUser} from "../../model/user_api"
+import {loginUser} from "../../infrastructure/user-api"
 import { toast } from 'react-toastify';
 
 export const useLoginViewModel = () => {

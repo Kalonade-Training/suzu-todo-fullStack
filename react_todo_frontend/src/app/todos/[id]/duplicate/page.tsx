@@ -2,7 +2,7 @@
 "use client";
 
 import LoadingSpinner from "@/src/components/ui/loadingSpinner";
-import { useDuplicateViewModel } from "../../../../viewModel/todo/duplicateViewModel";
+import { useDuplicateViewModel } from "../../../../viewModel/todo/duplicate-view-model";
 import { useRouter} from "next/navigation";
 
 export default function DuplicateTodoPage() {

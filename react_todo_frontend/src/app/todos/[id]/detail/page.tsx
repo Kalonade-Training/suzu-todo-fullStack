@@ -1,9 +1,9 @@
 //detail
 "use client";
 
-import { useTodoDetailViewModel } from "../../../../viewModel/todo/detailViewModel";
+import { useTodoDetailViewModel } from "../../../../viewModel/todo/detail-view-model";
 import { useRouter } from "next/navigation";
-import { formatDateTime} from "../../../../model/todo_api";
+import { formatDateTime} from "../../../../infrastructure/todo-api";
 import { Pencil, Trash, Copy } from "lucide-react";
 import LoadingSpinner from "@/src/components/ui/loadingSpinner";
 
@@ -18,18 +18,19 @@ export default function TodoDetailPage() {
 
   if (status === "notfound" || !todo) {
     return (
-      <p style={{ 
-          inset: 0,  
-          position: "fixed",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-          zIndex: 9999,
-          fontSize: "18px" }}>
-        タスクが見つかりませんでした
-      </p>
+      <>
+        <p style={{ 
+            inset: 0,  
+            position: "fixed",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "18px",
+            pointerEvents: "none",
+          }}>
+          タスクが見つかりませんでした
+        </p>
+      </>
     );
   }
   const handleDelete = () => {

@@ -1,11 +1,13 @@
 "use client";
 
 import { LogOut,User } from "lucide-react";
-import { useTodoListViewModel } from "@/src/viewModel/todo/todoViewModel";
+import { useTodoListViewModel } from "@/src/viewModel/todo/todo-view-model";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 export default function TodosLayout({ children }: { children: React.ReactNode }) {
   const {email, loginChecked, confirmLogout, confirmLogin } = useTodoListViewModel();
+  const router = useRouter();
 
   const handleLogout = () => {
     // ログアウト確認ダイアログ（View層で処理）
@@ -65,11 +67,17 @@ export default function TodosLayout({ children }: { children: React.ReactNode })
       { autoClose: false, closeOnClick: false }
     );
   };
+  const jumpTodos = () => {
+    router.push("/todos");
+  };  
   return (
     <>
       {/* ヘッダー */}
       <header className="header">
-        <h1 className="title">TODO管理アプリ</h1>
+        <h1 
+          className="title"
+          onClick={jumpTodos}
+        >TODO管理アプリ</h1>
 
         {loginChecked ? (
           <div className="right">

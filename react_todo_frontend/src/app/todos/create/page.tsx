@@ -2,7 +2,7 @@
 "use client";
 
 import LoadingSpinner from "@/src/components/ui/loadingSpinner";
-import { useCreateViewModel } from "../../../viewModel/todo/createViewModel";
+import { useCreateViewModel } from "../../../viewModel/todo/create-view-model";
 import {useRouter} from "next/navigation"
 
 export default function CreateTodo() {

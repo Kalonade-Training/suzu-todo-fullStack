@@ -1,6 +1,6 @@
 //register
 import {useState} from "react"
-import { registerUser } from "../../model/user_api"
+import { registerUser } from "../../infrastructure/user-api"
 import { useRouter } from "next/navigation"
 import { toast } from 'react-toastify';
 

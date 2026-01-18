@@ -2,7 +2,7 @@
 "use client"
 
 import { Eye, EyeOff, Mail} from 'lucide-react';
-import { useRegisterViewModel } from '../../viewModel/user/registerViewModel';
+import { useRegisterViewModel } from '../../viewModel/user/register-view-model';
 
 export default function Register(){
   const {

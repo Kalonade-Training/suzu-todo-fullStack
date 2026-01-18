@@ -2,7 +2,7 @@
 "use client";
 
 import LoadingSpinner from "@/src/components/ui/loadingSpinner";
-import { useDeleteViewModel } from "../../../../viewModel/todo/deleteViewModel";
+import { useDeleteViewModel } from "../../../../viewModel/todo/delete-view-model";
 import { useRouter } from "next/navigation";
 
 export default function DeleteTodoPage() {

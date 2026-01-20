@@ -13,23 +13,24 @@ import (
 )
 
 func main() {
-	r := gin.Default()
+	r := gin.Default() //Ginのデフォルトのルーターを取得
 
 	// CORS設定
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"},                     // React側URL
-		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"}, //使用するHTTPメソッド
-		AllowHeaders:     []string{"Content-Type", "Authorization"},             //許可するヘッダー
-		AllowCredentials: true,                                                  //クッキーの送信を許可
+		AllowOrigins:     []string{"http://localhost:3000"},                     // React側URLのみ許可
+		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"}, //使用するHTTPメソッド(OPTIONSはプリフライトリクエスト用(メソッド確認))
+		AllowHeaders:     []string{"Content-Type", "Authorization"},             //許可するヘッダー(token許可)
+		AllowCredentials: true,                                                  //クッキーの送信を許可（セッション管理やJWT）
 		MaxAge:           24 * time.Hour,                                        //プリフライトリクエストのキャッシュ時間
 	}))
 
-	r.Use(middleware.ErrorHandler())
+	r.Use(middleware.ErrorHandler()) //エラーレスポンスの形式を統一するミドルウェア
 
 	// Controllerを初期化
 	userController, err := di.InitializedUserController()
 	if err != nil {
 		log.Fatalf("Failed to initialize user controller: %v", err)
+		//依存関係の構築に失敗した際fatalfでプログラム強制終了
 	}
 
 	// ルーティング設定
@@ -43,10 +44,11 @@ func main() {
 		log.Fatalf("Failed to initialize todo controller: %v", err)
 	}
 
-	authClient := authclient.NewAuthClient()
+	authClient := authclient.NewAuthClient() //認証クライアントの作成
 
 	authGroup := r.Group("/todos")
-	authGroup.Use(middleware.AuthMiddleware(authClient)) // 認証ミドルウェアをtodos/配下にすべて適用
+	authGroup.Use(middleware.AuthMiddleware(authClient)) //認証クライアントをミドルウェアに渡す
+	//todo以下のルーティングはすべて認証ミドルウェアを通過する
 	authGroup.POST("/create", todoController.CreateTodo)
 	authGroup.GET("", todoController.GetTodos)
 	authGroup.PATCH("/:id/update", todoController.UpdateTodo)

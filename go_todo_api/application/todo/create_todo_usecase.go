@@ -29,7 +29,7 @@ func (u *CreateTodoUsecase) Execute(
 	filters := repository.TodoFilters{
 		Title: &titleValue,
 	}
-
+	//FINDALLで重複がないか検索
 	existing, err := u.TodoRepo.FindAll(userID, filters)
 	if err != nil {
 		return nil, err

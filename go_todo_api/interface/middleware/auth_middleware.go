@@ -16,7 +16,7 @@ func AuthMiddleware(authClient auth.IAuthClient) gin.HandlerFunc {
 			return
 		}
 
-		token = strings.TrimPrefix(token, "Bearer")
+		token = strings.TrimPrefix(token, "Bearer") //bearer部分削除
 		token = strings.TrimSpace(token)
 
 		userID, err := authClient.VerifyToken(token) //verify tokenで検証

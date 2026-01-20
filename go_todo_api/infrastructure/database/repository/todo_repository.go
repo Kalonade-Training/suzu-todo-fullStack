@@ -91,19 +91,19 @@ func (repo *TodoRepository) Create(todo *entity.Todos) error {
 	return nil
 }
 
-// FindByUserID は ユーザーID で Todo を取得する
-func (repo *TodoRepository) FindByUserID(userID value_object.UserID) ([]entity.Todos, error) {
-	var todos []model.Todos
-	err := repo.DB.Where("user_id = ?", userID.Value()).Find(&todos).Error
-	if err != nil {
-		return nil, fmt.Errorf("タスクが見つかりません： %w", err)
-	}
-	var entities []entity.Todos
-	for _, t := range todos {
-		entities = append(entities, modelToEntityTodo(t))
-	}
-	return entities, nil
-}
+// // FindByUserID は ユーザーID で Todo を取得する
+// func (repo *TodoRepository) FindByUserID(userID value_object.UserID) ([]entity.Todos, error) {
+// 	var todos []model.Todos
+// 	err := repo.DB.Where("user_id = ?", userID.Value()).Find(&todos).Error
+// 	if err != nil {
+// 		return nil, fmt.Errorf("タスクが見つかりません： %w", err)
+// 	}
+// 	var entities []entity.Todos
+// 	for _, t := range todos {
+// 		entities = append(entities, modelToEntityTodo(t))
+// 	}
+// 	return entities, nil
+// }
 
 // FindById は ID で Todo を取得する
 func (repo *TodoRepository) FindById(todoID value_object.TodoID) (*entity.Todos, error) {

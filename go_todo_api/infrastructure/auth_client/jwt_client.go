@@ -1,4 +1,4 @@
-package authclient
+package auth_client
 
 import (
 	"errors"

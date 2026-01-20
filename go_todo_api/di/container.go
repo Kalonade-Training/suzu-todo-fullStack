@@ -4,7 +4,7 @@ package di
 import (
 	"todo-app-go/application/todo"
 	"todo-app-go/application/user"
-	"todo-app-go/infrastructure/authclient"
+	"todo-app-go/infrastructure/auth_client"
 	"todo-app-go/infrastructure/database"
 	"todo-app-go/infrastructure/database/repository"
 	"todo-app-go/interface/handler"
@@ -20,7 +20,7 @@ func InitializeUserController() (*handler.UserHandler, error) {
 		handler.NewUserHandler,
 		user.NewLoginUsecase,
 		user.NewRegisterUsecase,
-		authclient.NewAuthClient,
+		auth_client.NewAuthClient,
 	)
 	return &handler.UserHandler{}, nil
 }

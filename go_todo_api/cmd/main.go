@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 	"todo-app-go/di"
-	"todo-app-go/infrastructure/authclient"
+	authclient "todo-app-go/infrastructure/auth_client"
 	"todo-app-go/interface/middleware"
 
 	"time"

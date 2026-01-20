@@ -9,7 +9,7 @@ package di
 import (
 	"todo-app-go/application/todo"
 	"todo-app-go/application/user"
-	"todo-app-go/infrastructure/authclient"
+	"todo-app-go/infrastructure/auth_client"
 	"todo-app-go/infrastructure/database"
 	"todo-app-go/infrastructure/database/repository"
 	"todo-app-go/interface/handler"
@@ -24,13 +24,14 @@ func InitializedUserController() (*handler.UserHandler, error) {
 		return nil, err
 	}
 	iUserRepository := repository.NewUserRepositoryProvider(db)
-	iAuthClient := authclient.NewAuthClient()
+	iAuthClient := auth_client.NewAuthClient()
 	registerUsecase := user.NewRegisterUsecase(iUserRepository, iAuthClient)
 	loginUsecase := user.NewLoginUsecase(iUserRepository, iAuthClient)
 	userHandler := handler.NewUserHandler(registerUsecase, loginUsecase)
 	return userHandler, nil
 }
 
+// TodoControllerの依存関係組み立て
 func InitializedTodoController() (*handler.TodoHandler, error) {
 	db, err := database.NewGormDB()
 	if err != nil {

@@ -2,7 +2,7 @@ package entity
 
 import (
 	"time"
-	value_object "todo-app-go/domain/vo"
+	value_object "todo-app-go/domain/value-object"
 )
 
 type Users struct {

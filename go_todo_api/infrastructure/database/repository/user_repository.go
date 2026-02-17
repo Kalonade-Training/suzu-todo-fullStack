@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"todo-app-go/domain/entity"
 	"todo-app-go/domain/repository"
-	value_object "todo-app-go/domain/vo"
+	value_object "todo-app-go/domain/value-object"
 	"todo-app-go/infrastructure/database/model"
 
 	"gorm.io/gorm"
@@ -18,22 +18,22 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{DB: db}
 }
 
-func (repo *UserRepository) Save(user *entity.Users) (string, error) {
+func (repo *UserRepository) Save(user *entity.Users) error {
 	modelUser := entityToModel(*user)
-	err := repo.DB.Create(modelUser).Error
+	err := repo.DB.Create(modelUser)
 	if err != nil {
-		return "", fmt.Errorf("登録できません: %w", err)
+		return fmt.Errorf("failed to save user: %w", err)
 	}
-	return modelUser.ID, nil
+	return nil
 }
 
 func (repo *UserRepository) FindByEmail(email value_object.Email) (*entity.Users, error) {
-	var users model.Users
+	var users []model.Users
 	err := repo.DB.Where("email = ?", email.Value()).First(&users).Error
 	if err != nil {
-		return nil, fmt.Errorf("ユーザーが見つかりません: %w", err)
+		return nil, fmt.Errorf("failed to find user: %w", err)
 	}
-	userEntity := modelToEntity(users)
+	userEntity := modelToEntity(users[0])
 	return &userEntity, nil
 }
 
